@@ -1,60 +1,204 @@
+
 <!doctype html>
 <html lang="pt-PT">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MASS MSG — Associar WhatsApp Business</title>
 <style>
-body{font-family:system-ui,'Segoe UI',sans-serif;background:#f5f7fa;color:#172b39;margin:0;padding:30px}main{max-width:660px;margin:45px auto;background:white;padding:32px;border-radius:16px;box-shadow:0 8px 30px #10203015}h1{font-size:1.6rem}button{background:#087d56;color:white;border:0;padding:14px 22px;border-radius:9px;font-size:1rem;cursor:pointer}button:disabled{opacity:.5;cursor:wait}#status{white-space:pre-wrap;background:#f0f3f6;padding:14px;border-radius:8px;min-height:54px}small{color:#566}strong{color:#123}code{overflow-wrap:anywhere}a{color:#087d56}</style>
+body {
+  font-family: system-ui, 'Segoe UI', sans-serif;
+  background: #f5f7fa;
+  color: #172b39;
+  margin: 0;
+  padding: 30px;
+}
+main {
+  max-width: 660px;
+  margin: 45px auto;
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px #10203015;
+}
+h1 { font-size: 1.6rem; }
+button {
+  background: #087d56;
+  color: white;
+  border: 0;
+  padding: 14px 22px;
+  border-radius: 9px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+#status {
+  white-space: pre-wrap;
+  background: #f0f3f6;
+  padding: 14px;
+  border-radius: 8px;
+  min-height: 54px;
+}
+small { color: #566; }
+strong { color: #123; }
+code { overflow-wrap: anywhere; }
+a { color: #087d56; }
+</style>
 </head>
-<body><main><h1>MASS MSG — Associação WhatsApp Business</h1>
-<p>Esta página inicia a associação oficial da Meta para utilizar o WhatsApp Business no telemóvel e na Cloud API, quando a conta é elegível para <em>Coexistence</em>.</p>
-<p><strong>Não prossigas</strong> se a Meta apresentar um aviso de que o número será removido da aplicação WhatsApp Business. Não aceites uma migração exclusiva para API.</p>
-<button id="start" disabled>Associar WhatsApp Business</button>
-<p id="status" role="status">A carregar o SDK da Meta…</p>
-<p><small>Esta página não envia mensagens, não pede passwords e não guarda tokens. A conclusão da associação requer ainda uma componente de servidor segura para tratar a autorização e os webhooks.</small></p>
+<body>
+<main>
+  <h1>MASS MSG — Associação WhatsApp Business</h1>
+
+  <p>
+    Esta página inicia a associação oficial da Meta para utilizar
+    o WhatsApp Business no telemóvel e na Cloud API, quando a conta
+    é elegível para <em>Coexistence</em>.
+  </p>
+
+  <p>
+    <strong>Não prossigas</strong> se a Meta apresentar um aviso
+    de que o número será removido da aplicação WhatsApp Business.
+    Não aceites uma migração exclusiva para API.
+  </p>
+
+  <button id="start" disabled>Associar WhatsApp Business</button>
+
+  <p id="status" role="status">A carregar o SDK da Meta…</p>
+
+  <p>
+    <small>
+      Esta página não envia mensagens, não pede passwords e não guarda
+      tokens. A conclusão da associação requer ainda uma componente
+      de servidor segura para tratar a autorização e os webhooks.
+    </small>
+  </p>
 </main>
+
 <script>
 'use strict';
+
 const APP_ID = '894913710256818';
 const CONFIG_ID = '1428859685252512';
+
 const button = document.getElementById('start');
-const status = document.getElementById('status');
-const setStatus = message => { status.textContent = message; };
+const statusElement = document.getElementById('status');
+
+const setStatus = message => {
+  statusElement.textContent = message;
+};
+
 window.fbAsyncInit = function () {
-  FB.init({appId:APP_ID,cookie:false,xfbml:false,version:'v24.0'});
-  button.disabled=false;
+  FB.init({
+    appId: APP_ID,
+    cookie: false,
+    xfbml: false,
+    version: 'v24.0'
+  });
+
+  button.disabled = false;
   setStatus('Pronto. Confirma que estás no domínio HTTPS autorizado na Meta.');
 };
-window.addEventListener('message', function(event){
-  if (!/^https:\/\/([a-z0-9-]+\.)*(facebook\.com|facebook\.net)$/.test(event.origin)) return;
+
+window.addEventListener('message', function(event) {
+  if (!/^https:\/\/([a-z0-9-]+\.)*(facebook\.com|facebook\.net)$/.test(event.origin)) {
+    return;
+  }
+
   let payload;
-  try { payload = typeof event.data === 'string' ? JSON.parse(event.data) : event.data; } catch { return; }
-  if (!payload || payload.type !== 'WA_EMBEDDED_SIGNUP') return;
-  if (payload.event === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING') {
-    setStatus('A Meta comunicou a conclusão do fluxo de associação. Ainda falta a integração segura no servidor para ativar a API. Não partilhes códigos ou tokens.');
-  } else if (payload.event === 'CANCEL') {
-    setStatus('Associação cancelada. Nenhuma mensagem foi enviada por esta página.');
-  } else if (payload.event === 'ERROR') {
-    setStatus('A Meta comunicou um erro durante a associação. Consulta o ecrã da Meta.');
+
+  try {
+    payload = typeof event.data === 'string'
+      ? JSON.parse(event.data)
+      : event.data;
+  } catch {
+    return;
+  }
+
+  if (!payload || payload.type !== 'WA_EMBEDDED_SIGNUP') {
+    return;
+  }
+
+  const eventName = payload.event || 'DESCONHECIDO';
+
+  if (eventName === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING') {
+    setStatus(
+      'A Meta comunicou a conclusão do processo Coexistence.\n' +
+      'Ainda é necessário configurar a integração segura no servidor.'
+    );
+  } else if (eventName === 'CANCEL') {
+    setStatus(
+      'Associação cancelada.\n' +
+      'Detalhes: ' + JSON.stringify(payload.data || {})
+    );
+  } else if (eventName === 'ERROR') {
+    setStatus(
+      'A Meta comunicou um erro.\n' +
+      'Detalhes: ' + JSON.stringify(payload.data || {})
+    );
+  } else {
+    setStatus(
+      'Evento recebido da Meta: ' + eventName + '\n' +
+      'Detalhes: ' + JSON.stringify(payload.data || {})
+    );
   }
 });
-button.addEventListener('click', function(){
-  if (!window.FB) {setStatus('O SDK da Meta não carregou.');return;}
+
+button.addEventListener('click', function() {
+  if (!window.FB) {
+    setStatus('O SDK da Meta não carregou.');
+    return;
+  }
+
   setStatus('A abrir a janela oficial da Meta…');
-  FB.login(function(response){
-    if (response && response.authResponse && response.authResponse.code) {
-      // Nunca colocar app secret ou trocar o código por token no browser.
-      // A troca de código exige um backend HTTPS autenticado.
-      setStatus('Autorização recebida da Meta. A troca segura do código e a configuração da API ainda exigem um servidor. O código não é mostrado nem guardado nesta página.');
+
+  FB.login(function(response) {
+    if (
+      response &&
+      response.authResponse &&
+      response.authResponse.code
+    ) {
+      setStatus(
+        'Autorização recebida da Meta.\n' +
+        'A troca segura do código e a configuração da API ' +
+        'ainda exigem um servidor.\n' +
+        'Não partilhes códigos ou tokens.'
+      );
     } else {
-      setStatus('A janela da Meta foi fechada ou a autorização não foi concluída.');
+      setStatus(
+        'A janela da Meta foi fechada ou a autorização não foi concluída.'
+      );
     }
-  },{
-    config_id:CONFIG_ID,
-    response_type:'code',
-    override_default_response_type:true,
-    extras:{setup:{},featureType:'whatsapp_business_app_onboarding'}
+  }, {
+    config_id: CONFIG_ID,
+    response_type: 'code',
+    override_default_response_type: true,
+    extras: {
+      setup: {},
+      featureType: 'whatsapp_business_app_onboarding',
+      sessionInfoVersion: '3'
+    }
   });
 });
-(function(d,s,id){let js=d.getElementsByTagName(s)[0],f=d.createElement(s);if(d.getElementById(id))return;f.id=id;f.src='https://connect.facebook.net/pt_PT/sdk.js';f.async=true;f.onerror=()=>setStatus('Não foi possível carregar o SDK da Meta.');js.parentNode.insertBefore(f,js);})(document,'script','facebook-jssdk');
-</script></body></html>
+
+(function(d, s, id) {
+  let js = d.getElementsByTagName(s)[0];
+  let f = d.createElement(s);
+
+  if (d.getElementById(id)) return;
+
+  f.id = id;
+  f.src = 'https://connect.facebook.net/pt_PT/sdk.js';
+  f.async = true;
+
+  f.onerror = () => setStatus(
+    'Não foi possível carregar o SDK da Meta.'
+  );
+
+  js.parentNode.insertBefore(f, js);
+})(document, 'script', 'facebook-jssdk');
+</script>
+</body>
+</html>
